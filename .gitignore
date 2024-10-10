@@ -9,7 +9,6 @@ yarn-debug.log*
 /coverage
 
 # Ignore build output
-build/
 dist/
 public/
 
