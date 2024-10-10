@@ -10,7 +10,6 @@ yarn-debug.log*
 
 # Ignore build output
 dist/
-public/
 
 # Ignore .env files for environment variables
 .env.local
