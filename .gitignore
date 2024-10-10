@@ -1,0 +1,36 @@
+# React-related
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log*
+.yarn-integrity
+/.pnp
+.pnp.js
+/coverage
+
+# Ignore build output
+build/
+dist/
+public/
+
+# Ignore .env files for environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env
+# Ignore lock files
+package-lock.json
+yarn.lock
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Editor-related files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
