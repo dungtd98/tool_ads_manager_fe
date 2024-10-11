@@ -4,24 +4,23 @@ import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext'; // Đảm bảo đường dẫn đúng
+import axiosInstance from '../utils/axiosInstance'; // Import axiosInstance
 
 const SSOButtons = () => {
   const navigate = useNavigate();
-
   const { login } = useAuth(); // Lấy hàm login từ AuthContext
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const res = await fetch('http://localhost:8000/api/accounts/google/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ access_token: tokenResponse.access_token }),
+        const response = await axiosInstance.post('/api/accounts/google/', {
+          access_token: tokenResponse.access_token,
         });
-        const data = await res.json();
-        if (res.ok) {
+
+        const data = response.data;
+
+        // Kiểm tra nếu đăng nhập thành công
+        if (response.status === 200 || response.status === 201) {
           console.log('Google login successful:', data);
           // Sử dụng hàm login từ AuthContext
           login(data.user, data.access, data.refresh);
@@ -31,25 +30,30 @@ const SSOButtons = () => {
           console.error('Google login failed:', data);
         }
       } catch (error) {
-        console.error('Error during Google login:', error);
+        if (error.response) {
+          // Lỗi từ server
+          console.error('Google login failed:', error.response.data);
+        } else {
+          // Lỗi mạng hoặc khác
+          console.error('Error during Google login:', error.message);
+        }
       }
     },
     onError: (error) => console.error('Google login failed:', error),
   });
 
-  const responseFacebook = async (response) => {
-    console.log('Facebook response:', response);
-    if (response.accessToken) {
+  const responseFacebook = async (authResponse) => {
+    console.log('Facebook response:', authResponse);
+    if (authResponse.accessToken) {
       try {
-        const res = await fetch('http://localhost:8000/api/accounts/facebook/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ access_token: response.accessToken }),
+        const response = await axiosInstance.post('/api/accounts/facebook/', {
+          access_token: authResponse.accessToken,
         });
-        const data = await res.json();
-        if (res.ok) {
+
+        const data = response.data;
+
+        // Kiểm tra nếu đăng nhập thành công
+        if (response.status === 200 || response.status === 201) {
           console.log('Facebook login successful:', data);
           // Sử dụng hàm login từ AuthContext
           login(data.user, data.access, data.refresh);
@@ -59,13 +63,18 @@ const SSOButtons = () => {
           console.error('Facebook login failed:', data);
         }
       } catch (error) {
-        console.error('Error during Facebook login:', error);
+        if (error.response) {
+          // Lỗi từ server
+          console.error('Facebook login failed:', error.response.data);
+        } else {
+          // Lỗi mạng hoặc khác
+          console.error('Error during Facebook login:', error.message);
+        }
       }
     } else {
       console.error('Facebook login failed: No access token');
     }
   };
-  
 
   const handleFacebookLogin = () => {
     console.log('Facebook login clicked');

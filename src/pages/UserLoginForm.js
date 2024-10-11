@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
 import SSOButtons from '../components/SSOButtons';
 import { useAuth } from '../utils/AuthContext'; // Đảm bảo đường dẫn chính xác
+import axiosInstance from '../utils/axiosInstance'; // Đảm bảo đường dẫn chính xác
 
 const UserLoginForm = () => {
   const [formData, setFormData] = useState({
@@ -58,30 +59,25 @@ const UserLoginForm = () => {
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/accounts/token/obtain/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await axiosInstance.post('/api/accounts/token/obtain/', formData);
 
-      const data = await response.json();
+      // Giả sử backend trả về các trường: user, access, refresh
+      const data = response.data;
 
-      if (response.ok) {
-        // Đăng nhập thành công
-        // Sử dụng hàm login từ AuthContext để cập nhật trạng thái người dùng
-        login(data.user, data.access, data.refresh);
+      // Đăng nhập thành công
+      login(data.user, data.access, data.refresh);
 
-        // Chuyển hướng đến trang chủ
-        navigate('/');
-      } else {
-        // Xử lý lỗi đăng nhập
-        setErrors({ general: data.detail || 'Đăng nhập thất bại. Vui lòng thử lại.' });
-      }
+      // Chuyển hướng đến trang chủ
+      navigate('/');
     } catch (error) {
+      if (error.response) {
+        // Lỗi từ server
+        setErrors({ general: error.response.data.detail || 'Đăng nhập thất bại. Vui lòng thử lại.' });
+      } else {
+        // Lỗi mạng hoặc khác
+        setErrors({ general: 'Đã xảy ra lỗi. Vui lòng thử lại sau.' });
+      }
       console.error('Error during login:', error);
-      setErrors({ general: 'Đã xảy ra lỗi. Vui lòng thử lại sau.' });
     }
   };
 

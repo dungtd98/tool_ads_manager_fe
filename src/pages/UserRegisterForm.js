@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import SSOButtons from "../components/SSOButtons"; // Import component SSOButtons
+import axiosInstance from '../utils/axiosInstance'; // Đảm bảo đường dẫn chính xác
 
 const UserRegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -88,28 +89,21 @@ const UserRegisterForm = () => {
 
     // Gửi dữ liệu đăng ký tới API
     try {
-      const response = await fetch("http://localhost:8000/api/accounts/register/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await axiosInstance.post("/api/accounts/register/", formData);
 
-      if (response.ok) {
-        // Đăng ký thành công
-        alert("Đăng ký thành công!");
-        // Chuyển hướng đến trang đăng nhập hoặc trang chủ
-        navigate("/login");
-      } else {
-        // Xử lý lỗi từ phản hồi của API
-        const data = await response.json();
-        // Giả sử API trả về đối tượng chứa các lỗi tương ứng với các trường
-        setErrors(data);
-      }
+      // Đăng ký thành công
+      alert("Đăng ký thành công!");
+      // Chuyển hướng đến trang đăng nhập hoặc trang chủ
+      navigate("/login");
     } catch (error) {
+      if (error.response) {
+        // Lỗi từ server
+        setErrors(error.response.data);
+      } else {
+        // Lỗi mạng hoặc khác
+        alert("Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.");
+      }
       console.error("Error during registration:", error);
-      alert("Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.");
     }
   };
 
